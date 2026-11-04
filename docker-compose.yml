@@ -1,0 +1,27 @@
+
+services:
+  api:
+    build: .
+    container_name: churnshield-api
+    command: uvicorn api.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    container_name: churnshield-dashboard
+    command: streamlit run dashboard.py --server.address 0.0.0.0 --server.port 8501
+    ports:
+      - "8501:8501"
+    environment:
+      API_URL: http://api:8000
+      HISTORY_PATH: /app/prediction_data/prediction_history.csv
+    volumes:
+      - churnshield-history:/app/prediction_data
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  churnshield-history:
